@@ -1,0 +1,241 @@
+openapi: 3.0.0
+info:
+  title: Hospital Management System API
+  version: 1.0.0
+  description: >
+    REST API endpoints for Doctor, Patient, and Appointment resources,
+    implemented as part of the IIT Madras AppDev Project.
+
+servers:
+  - url: http://127.0.0.1:5000/api
+
+paths:
+
+  /doctors:
+    get:
+      summary: Get list of doctors
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: Search by doctor name or specialization
+      responses:
+        "200":
+          description: List of doctors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Doctor"
+
+  /doctors/{doctor_id}:
+    get:
+      summary: Get doctor by id
+      parameters:
+        - in: path
+          name: doctor_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Doctor details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Doctor"
+        "404":
+          description: Doctor not found
+
+  /patients:
+    get:
+      summary: Get current logged-in patient
+      responses:
+        "200":
+          description: Patient details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Patient"
+        "404":
+          description: Patient not found
+
+  /patients/{patient_id}:
+    get:
+      summary: Get patient by ID
+      parameters:
+        - in: path
+          name: patient_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Patient details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Patient"
+        "403":
+          description: Not authorized
+        "404":
+          description: Patient not found
+
+  /appointments:
+    get:
+      summary: Get list of appointments for current user
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [Booked, Completed, Cancelled]
+      responses:
+        "200":
+          description: List of appointments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Appointment"
+
+    post:
+      summary: Create new appointment (patient only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [doctor_id, date, time]
+              properties:
+                doctor_id:
+                  type: integer
+                date:
+                  type: string
+                  format: date
+                time:
+                  type: string
+                  example: "10:30"
+      responses:
+        "201":
+          description: Appointment created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Appointment"
+        "400":
+          description: Invalid data
+
+  /appointments/{id}:
+    get:
+      summary: Get appointment by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Appointment details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Appointment"
+        "403":
+          description: Unauthorized
+        "404":
+          description: Appointment not found
+
+    patch:
+      summary: Update appointment status
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [Booked, Completed, Cancelled]
+      responses:
+        "200":
+          description: Updated appointment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Appointment"
+        "400":
+          description: Invalid update
+
+    delete:
+      summary: Delete an appointment
+      responses:
+        "200":
+          description: Appointment deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted:
+                    type: boolean
+                  id:
+                    type: integer
+        "403":
+          description: Not allowed to delete
+        "404":
+          description: Appointment not found
+
+components:
+  schemas:
+
+    Doctor:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string }
+        specialization: { type: string }
+        department: { type: string }
+        is_blacklisted: { type: boolean }
+
+    Patient:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string }
+        phone: { type: string }
+        address: { type: string }
+        age: { type: integer }
+        gender: { type: string }
+        is_blacklisted: { type: boolean }
+
+    Treatment:
+      type: object
+      properties:
+        id: { type: integer }
+        diagnosis: { type: string }
+        prescription: { type: string }
+        notes: { type: string }
+
+    Appointment:
+      type: object
+      properties:
+        id: { type: integer }
+        date: { type: string }
+        time: { type: string }
+        status: { type: string }
+        doctor_id: { type: integer }
+        doctor_name: { type: string }
+        patient_id: { type: integer }
+        patient_name: { type: string }
+        treatment:
+          $ref: "#/components/schemas/Treatment"

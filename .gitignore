@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+
+# Envs
+.env
+.venv/
+venv/
+ENV/
+
+# OS/IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Flask/Build
+instance/
+*.log
+*.sqlite
+*.db
+*.sqlite3
+
+# Node/Front (if any later)
+node_modules/
+dist/
+build/
