@@ -1,0 +1,105 @@
+{% extends "patient_base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex align-items-center">
+                <h2 class="h5 mb-0">My Profile</h2>
+            </div>
+            <div class="card-body">
+
+                <!-- Profile photo + basic info -->
+                <div class="d-flex align-items-center mb-3">
+                    <img src="{{ url_for('static', filename='img/default_profile.jpg') }}"
+                         alt="Profile photo"
+                         class="rounded-circle me-3"
+                         width="64" height="64">
+                    <div>
+                        <h5 class="mb-0">{{ current_user.name }}</h5>
+                        <small class="text-muted">Patient</small><br>
+                        <small><strong>Email:</strong> {{ current_user.email }}</small>
+                    </div>
+                </div>
+
+                <hr>
+
+                <form method="post" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <!-- Name -->
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control", size=40, required=True) }}
+                        {% for e in form.name.errors %}
+                            <div class="field-error">{{ e }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Phone with +91 prefix -->
+                    <div class="mb-3">
+                        {{ form.phone.label(class="form-label") }}
+                        <div class="input-group">
+                            <span class="input-group-text">+91</span>
+                            {{ form.phone(
+                                class="form-control",
+                                size=10,
+                                required=True,
+                                maxlength="10",
+                                pattern="\\d{10}",
+                                inputmode="numeric"
+                            ) }}
+                        </div>
+                        <div class="form-text">Enter 10 digit mobile number without country code.</div>
+                        {% for e in form.phone.errors %}
+                            <div class="field-error">{{ e }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Address -->
+                    <div class="mb-3">
+                        {{ form.address.label(class="form-label") }}
+                        {{ form.address(class="form-control", size=60, required=True) }}
+                        {% for e in form.address.errors %}
+                            <div class="field-error">{{ e }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Age -->
+                    <div class="mb-3">
+                        {{ form.age.label(class="form-label") }}
+                        {{ form.age(class="form-control", required=True, min="0", max="120") }}
+                        {% for e in form.age.errors %}
+                            <div class="field-error">{{ e }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Gender -->
+                    <div class="mb-3">
+                        {{ form.gender.label(class="form-label") }}
+                        {{ form.gender(class="form-select") }}
+                        {% for e in form.gender.errors %}
+                            <div class="field-error">{{ e }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Medical History -->
+                    <div class="mb-3">
+                        {{ form.medical_history.label(class="form-label") }}
+                        {{ form.medical_history(class="form-control", size=60) }}
+                        {% for e in form.medical_history.errors %}
+                            <div class="field-error">{{ e }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

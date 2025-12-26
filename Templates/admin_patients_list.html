@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+{% block title %}Admin: Patient List{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h4 mb-0">Patients</h2>
+    <div>
+        <a href="{{ url_for('admin.patient_create') }}" class="btn btn-sm btn-primary">+ Add Patient</a>
+    </div>
+</div>
+
+<section id="search" class="mb-3">
+    <form method="get" class="row g-2">
+        <div class="col-md-6">
+            {{ form.q(class="form-control", size=40, placeholder="Search by name, email, ID or phone") }}
+        </div>
+        <div class="col-md-auto">
+            <button type="submit" class="btn btn-outline-primary">Search</button>
+        </div>
+        <div class="col-md-auto">
+            <a href="{{ url_for('admin.patients_list') }}" class="btn btn-outline-secondary">Clear</a>
+        </div>
+    </form>
+</section>
+
+<section id="patients-table">
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-sm mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Blacklisted</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for p in patients %}
+                        <tr id="patient-{{ p.id }}">
+                            <td>{{ loop.index }}</td>
+                            <td>{{ p.id }}</td>
+                            <td>{{ p.user.name }}</td>
+                            <td>{{ p.user.email }}</td>
+                            <td>{{ p.phone or '-' }}</td>
+                            <td>
+                                {% if p.is_blacklisted %}
+                                    <span class="badge text-bg-danger">Yes</span>
+                                {% else %}
+                                    <span class="badge text-bg-success">No</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <!-- Edit -->
+                                <a href="{{ url_for('admin.patient_edit', patient_id=p.id) }}"
+                                   class="btn btn-outline-warning btn-sm">
+                                    Edit
+                                </a>
+
+                                <!-- Delete via modal -->
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-danger"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#patientDeleteModal"
+                                        data-patient-id="{{ p.id }}"
+                                        data-patient-name="{{ p.user.name }}">
+                                    Delete
+                                </button>
+
+                                <!-- Blacklist / Unblacklist via modal trigger -->
+                                <button type="button"
+                                        class="btn btn-outline-dark btn-sm ms-1"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#patientBlacklistModal"
+                                        data-patient-id="{{ p.id }}"
+                                        data-patient-name="{{ p.user.name }}"
+                                        data-is-blacklisted="{{ '1' if p.is_blacklisted else '0' }}">
+                                    {{ 'Unblacklist' if p.is_blacklisted else 'Blacklist' }}
+                                </button>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-3">
+                                No patients found.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ============================ #}
+{# Patient Delete Modal        #}
+{# ============================ #}
+<div class="modal fade" id="patientDeleteModal" tabindex="-1"
+     aria-labelledby="patientDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="patientDeleteForm" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="patientDeleteModalLabel">
+                        Delete Patient
+                    </h5>
+                    <button type="button" class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="patientDeleteMessage" class="mb-0">
+                        Are you sure you want to delete this patient?
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit"
+                            id="patientDeleteSubmit"
+                            class="btn btn-danger">
+                        Delete Patient
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# ============================ #}
+{# Patient Blacklist Modal     #}
+{# ============================ #}
+<div class="modal fade" id="patientBlacklistModal" tabindex="-1"
+     aria-labelledby="patientBlacklistModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="patientBlacklistForm" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="patientBlacklistModalLabel">
+                        Blacklist Patient
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="patientBlacklistMessage" class="mb-0">
+                        Are you sure?
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit"
+                            id="patientBlacklistSubmit"
+                            class="btn btn-danger">
+                        Blacklist
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Delete modal
+    var deleteModalEl = document.getElementById('patientDeleteModal');
+    if (deleteModalEl) {
+        deleteModalEl.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            if (!button) return;
+
+            var patientId = button.getAttribute('data-patient-id');
+            var patientName = button.getAttribute('data-patient-name');
+
+            var actionTemplate = "{{ url_for('admin.patient_delete', patient_id=0) }}";
+            var actionUrl = actionTemplate.replace('0', patientId);
+
+            var titleEl   = document.getElementById('patientDeleteModalLabel');
+            var messageEl = document.getElementById('patientDeleteMessage');
+            var formEl    = document.getElementById('patientDeleteForm');
+
+            titleEl.textContent = 'Delete Patient';
+            messageEl.textContent =
+                'Are you sure you want to permanently delete patient ' + patientName +
+                ' and their record? This action cannot be undone.';
+
+            formEl.setAttribute('action', actionUrl);
+        });
+    }
+
+    // Blacklist modal
+    var modalEl = document.getElementById('patientBlacklistModal');
+    if (!modalEl) return;
+
+    modalEl.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+        if (!button) return;
+
+        var patientId = button.getAttribute('data-patient-id');
+        var patientName = button.getAttribute('data-patient-name');
+        var isBlacklisted = button.getAttribute('data-is-blacklisted') === '1';
+
+        // Build action URL dynamically using a template with patient_id=0
+        var actionTemplate = "{{ url_for('admin.patient_blacklist', patient_id=0) }}";
+        var actionUrl = actionTemplate.replace('0', patientId);
+
+        var titleEl   = document.getElementById('patientBlacklistModalLabel');
+        var messageEl = document.getElementById('patientBlacklistMessage');
+        var submitBtn = document.getElementById('patientBlacklistSubmit');
+        var formEl    = document.getElementById('patientBlacklistForm');
+
+        if (isBlacklisted) {
+            titleEl.textContent = 'Unblacklist Patient';
+            messageEl.textContent =
+                'Are you sure you want to remove ' + patientName + ' from blacklist?';
+            submitBtn.textContent = 'Unblacklist';
+            submitBtn.classList.remove('btn-danger');
+            submitBtn.classList.add('btn-success');
+        } else {
+            titleEl.textContent = 'Blacklist Patient';
+            messageEl.textContent =
+                'Are you sure you want to blacklist ' + patientName +
+                '? They will not be able to log in.';
+            submitBtn.textContent = 'Blacklist';
+            submitBtn.classList.remove('btn-success');
+            submitBtn.classList.add('btn-danger');
+        }
+
+        formEl.setAttribute('action', actionUrl);
+    });
+});
+</script>
+
+{% endblock %}

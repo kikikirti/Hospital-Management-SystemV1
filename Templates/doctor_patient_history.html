@@ -1,0 +1,39 @@
+{% extends 'doctor_base.html' %}
+{% block title %}Patient History{% endblock %}
+{% block content %}
+
+<h2 class="h4 mb-3">Patient History – {{ patient.user.name }}</h2>
+
+{% if appts %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <ol class="mb-0">
+            {% for a in appts %}
+            <li class="mb-3">
+                <strong>{{ a.appt_date.strftime('%Y-%m-%d') }} {{ a.appt_time.strftime('%H:%M') }}</strong>
+                – Status: {{ a.status }}
+                {% if a.treatment %}
+                <div class="mt-1 ms-3">
+                    <div><em>Diagnosis:</em> {{ a.treatment.diagnosis or '-' }}</div>
+                    <div><em>Prescription:</em> {{ a.treatment.prescription or '-' }}</div>
+                    <div><em>Notes:</em> {{ a.treatment.notes or '-' }}</div>
+                </div>
+                {% else %}
+                <div class="mt-1 ms-3 text-muted">No treatment yet.</div>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ol>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">No history found.</div>
+{% endif %}
+
+<p class="mt-3">
+    <a href="{{ url_for('doctor.appointments', range='week') }}" class="btn btn-outline-secondary btn-sm">
+        Back to Appointments
+    </a>
+</p>
+
+{% endblock %}

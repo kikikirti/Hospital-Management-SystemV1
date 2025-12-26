@@ -1,0 +1,58 @@
+{% extends "patient_base.html" %}
+{% block title %}Reschedule Appointment{% endblock %}
+{% block content %}
+
+<h2 class="h4 mb-3">Reschedule Appointment #{{ appt.id }} (Dr. {{ appt.doctor.user.name }})</h2>
+<p class="text-muted">
+    Current: <strong>{{ appt.appt_date.strftime("%Y-%m-%d") }}</strong>
+    at <strong>{{ appt.appt_time.strftime("%H:%M") }}</strong>
+</p>
+
+<div class="mb-3">
+    <p class="text-muted mb-1">Select a new date in the next 7 days (no same-day booking):</p>
+    <div class="d-flex flex-wrap gap-2">
+        {% for d in days %}
+        {% set is_sel=(selected_date and d == selected_date) %}
+        <a href="{{ url_for('patient.reschedule', appt_id=appt.id, date=d.isoformat()) }}"
+           class="btn btn-sm {% if is_sel %}btn-success{% else %}btn-outline-secondary{% endif %}">
+            {{ d.strftime('%a, %d %b') }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+{% if selected_date %}
+    <h4 class="h6 mt-3">Available Slots for {{ selected_date.strftime('%a, %d %b, %Y') }}</h4>
+    {% if availablity_times %}
+    <form method="post">
+        {{ form.hidden_tag() }}
+        <input type="hidden" name="date" value="{{ selected_date.isoformat() }}">
+        <div class="d-flex flex-wrap gap-2 mt-2">
+            {% for t in availablity_times %}
+                        <button
+                name="time"
+                value="{{ t }}"
+                type="submit"
+                class="btn btn-outline-primary m-1"
+                onclick="return confirm('Confirm reschedule to {{ selected_date.strftime("%Y-%m-%d") }} at {{ t }}?');"
+            >
+                {{ t }}
+            </button>
+
+            {% endfor %}
+        </div>
+    </form>
+    {% else %}
+        <p class="text-muted">No available slots for the selected date.</p>
+    {% endif %}
+{% else %}
+    <p class="text-muted">Select a day above to see available slots.</p>
+{% endif %}
+
+<p class="mt-4">
+    <a href="{{ url_for('patient.appointments') }}" class="btn btn-outline-secondary btn-sm">
+        Back to Appointments
+    </a>
+</p>
+
+{% endblock %}

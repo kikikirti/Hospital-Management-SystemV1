@@ -1,0 +1,98 @@
+{% extends 'doctor_base.html' %}
+{% block title %}Doctor: Appointments{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h4 mb-0">My Appointments</h2>
+    <div class="btn-group" role="group" aria-label="Appointment range">
+        <a href="{{ url_for('doctor.appointments', range='today') }}"
+           class="btn btn-sm {% if view_range == 'today' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+            Today
+        </a>
+        <a href="{{ url_for('doctor.appointments', range='week') }}"
+           class="btn btn-sm {% if view_range == 'week' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+            This Week
+        </a>
+    </div>
+</div>
+
+{% if appts %}
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-sm mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Patient</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in appts %}
+                    <tr>
+                        <td>{{ a.id }}</td>
+                        <td>{{ a.appt_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ a.appt_time.strftime('%H:%M') }}</td>
+                        <td>
+                            <a href="{{ url_for('doctor.patient_history', patient_id=a.patient_id) }}">
+                                {{ a.patient.user.name }}
+                            </a>
+                        </td>
+                        <td>{{ a.status }}</td>
+                        <td class="text-end table-actions">
+                            <!-- Treatment button -->
+                            <a href="{{ url_for('doctor.appointment_treatment', appt_id=a.id) }}"
+                               class="btn btn-sm btn-outline-secondary">
+                                Treatment
+                            </a>
+
+                            <!-- Status actions similar to admin -->
+                            {% if a.status == "Booked" %}
+                                <form method="post"
+                                      action="{{ url_for('doctor.appointment_set_status_doctor', appt_id=a.id) }}"
+                                      class="d-inline ms-1">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="status" value="Completed">
+                                    <button type="submit" class="btn btn-sm btn-outline-success">
+                                        Complete
+                                    </button>
+                                </form>
+
+                                <form method="post"
+                                      action="{{ url_for('doctor.appointment_set_status_doctor', appt_id=a.id) }}"
+                                      class="d-inline ms-1">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="status" value="Cancelled">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        Cancel
+                                    </button>
+                                </form>
+
+                            {% elif a.status in ["Completed", "Cancelled"] %}
+                                <form method="post"
+                                      action="{{ url_for('doctor.appointment_set_status_doctor', appt_id=a.id) }}"
+                                      class="d-inline ms-1">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="status" value="Booked">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                        Reopen (Booked)
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<p class="text-muted">No appointments found.</p>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'doctor_base.html' %}
+{% block title %}Treatment Form{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h2 class="h5 mb-0">Treatment for Appointment #{{ appt.id }}</h2>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">
+                    <strong>Patient:</strong> {{ appt.patient.user.name }}<br>
+                    <strong>When:</strong> {{ appt.appt_date.strftime('%Y-%m-%d') }} {{ appt.appt_time.strftime('%H:%M') }}<br>
+                    <strong>Status:</strong> {{ appt.status }}
+                </p>
+
+                <form method="post" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.diagnosis.label(class="form-label") }}
+                        {{ form.diagnosis(class="form-control", rows=4, cols=80) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.prescription.label(class="form-label") }}
+                        {{ form.prescription(class="form-control", rows=4, cols=80) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.notes.label(class="form-label") }}
+                        {{ form.notes(class="form-control", rows=4, cols=80) }}
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('doctor.appointments', range='today') }}"
+                           class="btn btn-outline-secondary">
+                            Back
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            {{ form.submit.label.text }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

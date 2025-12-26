@@ -1,0 +1,74 @@
+{% extends "patient_base.html" %}
+{% block title %}My Appointments{% endblock %}
+{% block content %}
+
+<h2 class="h4 mb-3">My Appointments</h2>
+
+<h3 class="h6">Upcoming Appointments</h3>
+{% if upcoming %}
+<div class="card shadow-sm mb-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-sm mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Doctor</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in upcoming %}
+                    <tr>
+                        <td>{{ a.appt_date.strftime("%Y-%m-%d") }}</td>
+                        <td>{{ a.appt_time.strftime("%H:%M") }}</td>
+                        <td>{{ a.doctor.user.name if a.doctor and a.doctor.user else 'Unknown' }}</td>
+<td>{{ a.status }}</td>
+<td>
+    {% if a.status == 'Booked' %}
+        <a href="{{ url_for('patient.reschedule', appt_id=a.id) }}"
+           class="btn btn-sm btn-outline-primary">
+            Reschedule
+        </a>
+        <a href="{{ url_for('patient.cancel', appt_id=a.id) }}"
+           class="btn btn-sm btn-outline-danger ms-1">
+            Cancel
+        </a>
+    {% else %}
+        <span class="text-muted">No actions</span>
+    {% endif %}
+</td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<p class="text-muted">No upcoming appointments.</p>
+{% endif %}
+
+<hr>
+
+<h3 class="h6 mt-3">Past Appointments</h3>
+{% if past %}
+<ul class="list-group">
+    {% for a in past %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>
+            {{ a.appt_date.strftime("%Y-%m-%d") }} at {{ a.appt_time.strftime("%H:%M") }}
+            with Dr. {{ a.doctor.user.name if a.doctor and a.doctor.user else 'Unknown' }}
+        </span>
+        <span class="badge text-bg-secondary">{{ a.status }}</span>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p class="text-muted">No past appointments.</p>
+{% endif %}
+
+{% endblock %}

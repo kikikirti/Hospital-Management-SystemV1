@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+
+<div class="row mb-3">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <h1 class="h3 mb-0" id="dashboard">Admin Dashboard</h1>
+        <span class="text-muted small">System snapshot</span>
+    </div>
+</div>
+
+<!-- Stats cards -->
+<section id="stats" class="mb-4">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Doctors</h5>
+                    <p class="display-6 mb-0">{{ total_doctors }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Patients</h5>
+                    <p class="display-6 mb-0">{{ total_patients }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Appointments</h5>
+                    <p class="display-6 mb-0">{{ total_appts }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Live (Booked)</h5>
+                    <p class="display-6 mb-0">{{ booked_appts }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Completed</h5>
+                    <p class="display-6 mb-0">{{ completed_appts }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Cancelled</h5>
+                    <p class="display-6 mb-0">{{ cancelled_appts }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Summary chart (total counts) -->
+<section class="mb-4">
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="h5 mb-0">System Overview</h3>
+            <span class="text-muted small">Total Doctors, Patients &amp; Appointments</span>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-12 col-lg-7">
+                    <div class="chart-wrapper-sm">
+                        <canvas id="adminsummaryChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-5 mt-3 mt-lg-0">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Doctors</span>
+                            <strong>{{ total_doctors }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Patients</span>
+                            <strong>{{ total_patients }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Appointments</span>
+                            <strong>{{ total_appts }}</strong>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Appointment status distribution chart -->
+<section class="mb-4">
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="h5 mb-0">Appointment Status Distribution</h3>
+            <span class="text-muted small">Booked vs Completed vs Cancelled</span>
+        </div>
+        <div class="card-body">
+            {% set has_status_data = status_labels and status_values %}
+            {% if has_status_data %}
+                <div class="row align-items-center">
+                    <div class="col-12 col-lg-7">
+                        <div class="chart-wrapper-sm">
+                            <canvas id="adminStatusChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-5 mt-3 mt-lg-0">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Booked</span>
+                                <strong>{{ booked_appts }}</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Completed</span>
+                                <strong>{{ completed_appts }}</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Cancelled</span>
+                                <strong>{{ cancelled_appts }}</strong>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            {% else %}
+                <p class="text-muted mb-0">No appointment status data available.</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    (function () {
+        // Summary bar chart
+        const ctx = document.getElementById('adminsummaryChart').getContext('2d');
+        const labels = ['Doctors', 'Patients', 'Appointments'];
+        const data = [
+            {{ total_doctors }},
+            {{ total_patients }},
+            {{ total_appts }}
+        ];
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Count',
+                    data: data
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    title: {
+                        display: true,
+                        text: 'System Overview'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { precision: 0 }
+                    }
+                }
+            }
+        });
+
+        // Status pie chart
+        const statusLabels = {{ status_labels | tojson | default([]) }};
+        const statusValues = {{ status_values | tojson | default([]) }};
+
+        if (statusLabels && statusLabels.length > 0) {
+            const ctx2 = document.getElementById('adminStatusChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'pie',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        data: statusValues
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Appointment Status Distribution'
+                        }
+                    }
+                }
+            });
+        }
+    })();
+</script>
+
+
+{% endblock %}

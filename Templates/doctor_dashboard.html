@@ -1,0 +1,221 @@
+{% extends "doctor_base.html" %}
+{% block title %}Doctor Dashboard{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h4 mb-0">Welcome Dr. {{ current_user.name }}</h2>
+    <div class="btn-group" role="group" aria-label="Appointment shortcuts">
+        <a href="{{ url_for('doctor.appointments', range='today') }}"
+           class="btn btn-sm btn-outline-primary">
+            Today's Appointments
+        </a>
+        <a href="{{ url_for('doctor.appointments', range='week') }}"
+           class="btn btn-sm btn-outline-secondary">
+            This Week
+        </a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">Today</h5>
+                <p class="mb-0 text-muted">Upcoming appointments for today.</p>
+                <p class="display-6 mt-2">{{ today_appts|length }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">This Week</h5>
+                <p class="mb-0 text-muted">Total upcoming appointments this week.</p>
+                <p class="display-6 mt-2">{{ weekly_appts|length }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h3 class="h5 mt-4 mb-2">Upcoming Appointments (Today)</h3>
+{% if today_appts %}
+<div class="card shadow-sm mb-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-sm mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Patient</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for a in today_appts %}
+                    <tr>
+                        <td>{{ a.id }}</td>
+                        <td>
+                            <a href="{{ url_for('doctor.patient_history', patient_id=a.patient_id) }}">
+                                {{ a.patient.user.name }}
+                            </a>
+                        </td>
+                        <td>{{ a.appt_time.strftime('%H:%M') }}</td>
+                        <td>{{ a.status }}</td>
+                        <td class="text-end table-actions">
+    <a href="{{ url_for('doctor.appointment_treatment', appt_id=a.id) }}"
+       class="btn btn-sm btn-outline-secondary">
+        Update
+    </a>
+
+    {% if a.status == "Booked" %}
+        <form method="post"
+              action="{{ url_for('doctor.appointment_set_status_doctor', appt_id=a.id) }}"
+              class="d-inline ms-1">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="status" value="Completed">
+            <button type="submit" class="btn btn-sm btn-outline-success">
+                Complete
+            </button>
+        </form>
+
+        <form method="post"
+              action="{{ url_for('doctor.appointment_set_status_doctor', appt_id=a.id) }}"
+              class="d-inline ms-1">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="status" value="Cancelled">
+            <button type="submit" class="btn btn-sm btn-outline-danger">
+                Cancel
+            </button>
+        </form>
+
+    {% elif a.status in ["Completed", "Cancelled"] %}
+        <form method="post"
+              action="{{ url_for('doctor.appointment_set_status_doctor', appt_id=a.id) }}"
+              class="d-inline ms-1">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="status" value="Booked">
+            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                Reopen (Booked)
+            </button>
+        </form>
+    {% endif %}
+</td>
+
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<p class="text-muted">No appointments for today.</p>
+{% endif %}
+
+<hr>
+
+<h3 class="h5 mt-4 mb-2">Assigned Patients</h3>
+{% if patients %}
+<div class="card shadow-sm mb-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-sm mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>History</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for p in patients %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ p.user.name }}</td>
+                        <td>
+                            <a href="{{ url_for('doctor.patient_history', patient_id=p.id) }}"
+                               class="btn btn-sm btn-outline-primary">
+                                View History
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<p class="text-muted">No patients yet.</p>
+{% endif %}
+
+<hr>
+
+<h3 class="h5 mt-4 mb-2">Upcoming Appointments (This Week)</h3>
+{% if weekly_appts %}
+<ul class="list-group mb-4">
+    {% for a in weekly_appts %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>
+            <strong>{{ a.appt_date.strftime('%Y-%m-%d') }} {{ a.appt_time.strftime('%H:%M') }}</strong>
+            &nbsp;– Patient:
+            <a href="{{ url_for('doctor.patient_history', patient_id=a.patient_id) }}">
+                {{ a.patient.user.name }}
+            </a>
+        </span>
+        <span class="badge text-bg-secondary">{{ a.status }}</span>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p class="text-muted">No appointments for this week.</p>
+{% endif %}
+
+<hr>
+
+<h3 class="h5 mt-4 mb-2">Appointment Distribution (All Time)</h3>
+{% if status_labels and status_values %}
+<div class="chart-wrapper-sm mb-3">
+    <canvas id="doctorstatuschart"></canvas>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    (function() {
+        const rawLabels = {{ status_labels|tojson }};
+        const rawData = {{ status_values|tojson }};
+
+        if (!rawLabels || rawLabels.length === 0) {
+            return;
+        }
+        const labels = rawLabels.map((label, idx) => `${label} (${rawData[idx]})`);
+        const ctx = document.getElementById('doctorstatuschart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: rawData
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Appointment Status Distribution'
+                    }
+                }
+            }
+        });
+    })();
+</script>
+{% else %}
+<p class="text-muted">No appointment data available for chart.</p>
+{% endif %}
+
+{% endblock %}

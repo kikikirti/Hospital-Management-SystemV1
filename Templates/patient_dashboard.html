@@ -1,0 +1,204 @@
+{% extends "patient_base.html" %}
+{% block title %}Patient Dashboard{% endblock %}
+{% block content %}
+
+<h2 class="h4 mb-3">Welcome to your dashboard, {{ current_user.name }}!</h2>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">Upcoming Appointments</h5>
+                <p class="display-6 mb-0">{{ upcoming|length }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<h3 class="h6 mt-4">Upcoming Appointments</h3>
+{% if upcoming %}
+<ul class="list-group mb-3">
+    {% for a in upcoming %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>
+            Dr. {{ a.doctor.user.name if a.doctor and a.doctor.user else 'Unknown' }}
+            on {{ a.appt_date.strftime("%Y-%m-%d") }}
+            at {{ a.appt_time.strftime("%H:%M") }}
+        </span>
+        <span class="badge text-bg-primary">{{ a.status }}</span>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p class="text-muted">No upcoming appointments.</p>
+{% endif %}
+
+<h3 class="h6 mt-4">Past Appointments</h3>
+{% if past %}
+<ul class="list-group mb-3">
+    {% for a in past %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>
+            Dr. {{ a.doctor.user.name if a.doctor and a.doctor.user else 'Unknown' }}
+            on {{ a.appt_date.strftime("%Y-%m-%d") }}
+            at {{ a.appt_time.strftime("%H:%M") }}
+        </span>
+        <span class="badge text-bg-secondary">{{ a.status }}</span>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p class="text-muted">No past appointments.</p>
+{% endif %}
+
+<hr>
+
+<h3 class="h6 mt-4">Doctors Availability (Next 7 Days)</h3>
+{% if doctors %}
+<div class="card shadow-sm mb-3">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-sm mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Doctor</th>
+                        <th>Specialization</th>
+                        {% for dt in days %}
+                            <th>{{ dt.strftime("%d-%b") }}</th>
+                        {% endfor %}
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for doctor in doctors %}
+                    <tr>
+                        <td>Dr. {{ doctor.user.name }}</td>
+                        <td>{{ doctor.specialization or "General" }}</td>
+                        {% for dt in days %}
+                            <td>{{ availability_summary[doctor.id][loop.index0] }}</td>
+                        {% endfor %}
+                        <td class="text-end">
+                            <a href="{{ url_for('patient.book_appointment', doctor_id=doctor.id) }}"
+                               class="btn btn-sm btn-outline-primary">
+                                Book Appointment
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<p class="text-muted">No doctors available.</p>
+{% endif %}
+
+<h3 class="h6 mt-4">Departments / Specializations</h3>
+{% if departments %}
+<ul class="list-group mb-3">
+    {% for d in departments %}
+        <li class="list-group-item">
+            <strong>{{ d.name }}</strong>
+            {% if d.description %} – {{ d.description }}{% endif %}
+        </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p class="text-muted">No departments found.</p>
+{% endif %}
+
+<hr>
+
+<h3 class="h6 mt-4">Treatment History (Completed Visits per Doctor by Status)</h3>
+{% set has_chart_data = (doctor_labels and (booked_counts or completed_counts or cancelled_counts)) %}
+{% if has_chart_data %}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Appointments by Doctor and Status</h5>
+    </div>
+    <div class="card-body">
+        <div class="chart-wrapper-sm">
+            <canvas id="patienttreatmentchart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    (function() {
+        const labels    = {{ doctor_labels | tojson }};
+        const booked    = {{ booked_counts | tojson }};
+        const completed = {{ completed_counts | tojson }};
+        const cancelled = {{ cancelled_counts | tojson }};
+
+        if (!labels || labels.length === 0) {
+            return;
+        }
+
+        const canvas = document.getElementById('patienttreatmentchart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Completed',
+                        data: completed,
+                        stack: 'appointments',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Cancelled',
+                        data: cancelled,
+                        stack: 'appointments',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Booked',
+                        data: booked,
+                        stack: 'appointments',
+                        backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                        borderColor: 'rgba(255, 206, 86, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Appointments by Doctor and Status'
+                    }
+                },
+                scales: {
+                    x: { stacked: true },
+                    y: {
+                        beginAtZero: true,
+                        ticks: { precision: 0 }
+                    }
+                }
+            }
+        });
+    })();
+</script>
+
+{% else %}
+<p class="text-muted">No completed treatment yet to show in chart.</p>
+{% endif %}
+
+{% endblock %}

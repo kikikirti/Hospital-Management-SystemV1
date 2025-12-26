@@ -1,0 +1,122 @@
+{% extends 'doctor_base.html' %}
+{% block title %}Doctor · Availability{% endblock %}
+{% block content %}
+
+<div class="row g-3">
+    <div class="col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h2 class="h5 mb-0">Provide Availability</h2>
+                <small class="text-muted">Create slots for the next 7 days</small>
+            </div>
+            <div class="card-body">
+
+                <!-- Quick week picker (like booking interface) -->
+                {% if days %}
+                <div class="mb-3">
+                    <p class="text-muted mb-1">Select a date in the next 7 days:</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for d in days %}
+                        {% set is_sel = (selected_date and d == selected_date) %}
+                        <a href="{{ url_for('doctor.availability', date=d.isoformat()) }}"
+                           class="btn btn-sm {% if is_sel %}btn-success{% else %}btn-outline-secondary{% endif %}">
+                            {{ d.strftime('%a, %d %b') }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <form method="post" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.date.label(class="form-label") }}
+                        {{ form.date(class="form-control", type='date', required=True) }}
+                        <div class="form-text">
+                            Pick a single date or use the buttons above to pre-fill it.
+                        </div>
+                        {% for e in form.date.errors %}
+                            <div class="field-error">{{ e }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.start_time.label(class="form-label") }}
+                        {{ form.start_time(class="form-control", type='time', required=True) }}
+                        {% for e in form.start_time.errors %}
+                            <div class="field-error">{{ e }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.end_time.label(class="form-label") }}
+                        {{ form.end_time(class="form-control", type='time', required=True) }}
+                        {% for e in form.end_time.errors %}
+                            <div class="field-error">{{ e }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            {{ form.submit.label.text }}
+                        </button>
+                    </div>
+                </form>
+
+                <hr>
+
+                <p class="text-muted mb-0" style="font-size: 0.9rem;">
+                    Tip: Create 1–2 slots per day (e.g., 10:00–12:00, 14:00–16:00) to keep booking predictable.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h2 class="h5 mb-0">My Upcoming Slots (Next 7 Days)</h2>
+            </div>
+            <div class="card-body p-0">
+                {% if slots %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover table-sm mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for s in slots %}
+                            <tr>
+                                <td>{{ s.avail_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ s.start_time.strftime('%H:%M') }}</td>
+                                <td>{{ s.end_time.strftime('%H:%M') }}</td>
+                                <td class="text-end">
+                                    <form method="post"
+                                          action="{{ url_for('doctor.availability_delete', slot_id=s.id) }}"
+                                          class="d-inline">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                    <p class="text-muted m-3">No upcoming slots found. Add some availability on the left.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

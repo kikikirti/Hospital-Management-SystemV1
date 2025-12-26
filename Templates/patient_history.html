@@ -1,0 +1,42 @@
+{% extends "patient_base.html" %}
+{% block title %}Treatment History{% endblock %}
+{% block content %}
+
+<h2 class="h4 mb-3">Treatment History</h2>
+
+{% if appts %}
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-sm mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Doctor</th>
+                        <th>Diagnosis</th>
+                        <th>Prescriptions</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in appts %}
+                    <tr>
+                        <td>{{ a.appt_date.strftime("%Y-%m-%d") }}</td>
+                        <td>{{ a.appt_time.strftime("%H:%M") }}</td>
+                        <td>Dr. {{ a.doctor.user.name }}</td>
+                        <td>{{ a.treatment.diagnosis if a.treatment else "N/A" }}</td>
+                        <td>{{ a.treatment.prescription if a.treatment else "N/A" }}</td>
+                        <td>{{ a.treatment.notes if a.treatment else "N/A" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<p class="text-muted">No treatment history available.</p>
+{% endif %}
+
+{% endblock %}

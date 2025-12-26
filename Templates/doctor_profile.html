@@ -1,0 +1,77 @@
+{% extends "doctor_base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex align-items-center">
+                <h2 class="h5 mb-0">My Profile</h2>
+            </div>
+            <div class="card-body">
+
+                <!-- Header info -->
+                <div class="d-flex align-items-center mb-3">
+                    <img src="{{ url_for('static', filename='img/default_profile.jpg') }}"
+                         alt="Profile photo"
+                         class="rounded-circle me-3"
+                         width="64" height="64">
+                    <div>
+                        <h5 class="mb-0">{{ current_user.name }}</h5>
+                        <small class="text-muted">Doctor</small><br>
+                        <small><strong>Current Email:</strong> {{ current_user.email }}</small>
+                    </div>
+                </div>
+
+                <hr>
+
+                <form method="post" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <!-- Name -->
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control", required=True) }}
+                        {% for e in form.name.errors %}
+                            <div class="field-error">{{ e }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control", required=True) }}
+                        {% for e in form.email.errors %}
+                            <div class="field-error">{{ e }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- New password -->
+                    <div class="mb-3">
+                        {{ form.password.label(class="form-label") }}
+                        {{ form.password(class="form-control", autocomplete="new-password") }}
+                        <div class="form-text">Leave blank to keep your current password.</div>
+                        {% for e in form.password.errors %}
+                            <div class="field-error">{{ e }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Specialization -->
+                    <div class="mb-3">
+                        {{ form.specialization.label(class="form-label") }}
+                        {{ form.specialization(class="form-control") }}
+                        {% for e in form.specialization.errors %}
+                            <div class="field-error">{{ e }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

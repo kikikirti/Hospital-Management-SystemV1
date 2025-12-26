@@ -1,0 +1,54 @@
+{% extends "patient_base.html" %}
+{% block title %}Book Appointment{% endblock %}
+{% block content %}
+
+<h2 class="h4 mb-3">Book Appointment with Dr. {{ doctor.user.name }}</h2>
+
+<div class="mb-3">
+    <p class="text-muted mb-1">Select a date in the next 7 days (no same-day booking):</p>
+    <div class="d-flex flex-wrap gap-2">
+        {% for d in days %}
+        {% set is_sel = (selected_date and d == selected_date) %}
+        <a href="{{ url_for('patient.book_appointment', doctor_id=doctor.id, date=d.isoformat()) }}"
+           class="btn btn-sm {% if is_sel %}btn-success{% else %}btn-outline-secondary{% endif %}">
+            {{ d.strftime('%a, %d %b') }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+{% if selected_date %}
+    <h4 class="h6 mt-4">Available Slots for {{ selected_date.strftime('%a, %d %b, %Y') }}</h4>
+    {% if available_times %}
+    <form method="post">
+        {{ form.hidden_tag() }}
+        <input type="hidden" name="date" value="{{ selected_date.isoformat() }}">
+        <div class="d-flex flex-wrap gap-2 mt-2">
+            {% for t in available_times %}
+            <button
+            name="time"
+            value="{{ t }}"
+            type="submit"
+            class="btn btn-outline-primary m-1"
+            onclick="return confirm('Confirm appointment on {{ selected_date.strftime("%Y-%m-%d") }} at {{ t }}?');"
+        >
+            {{ t }}
+        </button>
+
+            {% endfor %}
+        </div>
+    </form>
+    {% else %}
+        <p class="text-muted mt-2">No slots left for this day. Please pick another day above.</p>
+    {% endif %}
+{% else %}
+    <p class="text-muted">Select a day above to see available slots.</p>
+{% endif %}
+
+<p class="mt-4">
+    <a href="{{ url_for('patient.search_doctors') }}" class="btn btn-outline-secondary btn-sm">
+        Back to Doctor Search
+    </a>
+</p>
+
+{% endblock %}

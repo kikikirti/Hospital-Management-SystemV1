@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if mode=='edit' else 'Create' }} Doctor{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h2 class="h5 mb-0">{{ 'Edit' if mode=='edit' else 'Create' }} Doctor</h2>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control", size=40, required=True) }}
+                        {% for e in form.name.errors %}
+                            <div class="field-error">{{ e }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control", size=40, required=True) }}
+                        {% for e in form.email.errors %}
+                            <div class="field-error">{{ e }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.password.label(class="form-label") }}
+                        {{ form.password(class="form-control", autocomplete="new-password") }}
+                        <div class="form-text">
+                            {% if mode == 'edit' %}
+                                Leave blank to keep password unchanged.
+                            {% else %}
+                                Password is required.
+                            {% endif %}
+                        </div>
+                        {% for e in form.password.errors %}
+                            <div class="field-error">{{ e }}</div>
+                        {% endfor %}
+                    </div>
+
+
+                    <div class="mb-3">
+                        {{ form.specialization.label(class="form-label") }}
+                        {{ form.specialization(class="form-control", size=40) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.department.label(class="form-label") }}
+                        {{ form.department(class="form-select") }}
+                        {% for e in form.department.errors %}
+                            <div class="field-error">{{ e }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.doctors_list') }}" class="btn btn-outline-secondary">
+                            Back to Doctors
+                        </a>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

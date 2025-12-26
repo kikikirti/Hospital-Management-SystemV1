@@ -1,0 +1,39 @@
+{% extends "patient_base.html" %}
+{% block title %}Cancel Appointment{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-header bg-danger text-white">
+        <h2 class="h5 mb-0">Cancel Appointment #{{ appt.id }}</h2>
+      </div>
+      <div class="card-body">
+        <p class="mb-2">
+          <strong>Doctor:</strong>
+          Dr. {{ appt.doctor.user.name if appt.doctor and appt.doctor.user else 'Unknown' }}
+        </p>
+        <p class="mb-3">
+          <strong>Date &amp; Time:</strong>
+          {{ appt.appt_date.strftime("%Y-%m-%d") }} at {{ appt.appt_time.strftime("%H:%M") }}
+        </p>
+
+        <p class="text-muted">
+          Are you sure you want to cancel this appointment?
+        </p>
+
+        <form method="post" class="mt-3">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-danger me-2">
+            Confirm Cancel
+          </button>
+          <a href="{{ url_for('patient.appointments') }}" class="btn btn-outline-secondary">
+            Back to My Appointments
+          </a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
