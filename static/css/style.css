@@ -1,0 +1,151 @@
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, Helvetica, sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* Flash Message Styles */
+ul.flashes,
+ul.flash-messages {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+}
+
+.flash-error,
+.flash-danger {
+    color: #b71c1c;
+}
+
+.flash-success {
+    color: #1b5e20;
+}
+
+/* Form validation styles (works nicely with Bootstrap) */
+.was-validated input:invalid,
+.was-validated select:invalid,
+.was-validated textarea:invalid {
+    border-color: #dc3545;
+    border: 1px solid #dc3545;
+    outline: none;
+}
+
+.was-validated input:valid,
+.was-validated select:valid,
+.was-validated textarea:valid {
+    border-color: #198754;
+    border: 1px solid #198754;
+    outline: none;
+}
+
+.form-errors {
+    border: 1px solid #dc3545;
+    background: #ffe6e6;
+    padding: 8px 12px;
+    margin: 10px 0;
+    color: #721c24;
+}
+
+.field-error {
+    color: #dc3545;
+    font-size: 0.9em;
+    margin-top: 4px;
+}
+
+/* Generic layout helpers */
+.main-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    flex: 1 0 auto;
+}
+
+.site-footer {
+    flex-shrink: 0;
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+/* Auth pages (login/register/home) */
+.auth-container {
+    max-width: 420px;
+}
+
+/* ---------- Global small button style ---------- */
+.btn-sm {
+    padding: 0.35rem 0.9rem;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+/* Tables */
+.table-sm td,
+.table-sm th {
+    vertical-align: middle;
+}
+
+/* Keep Date, Time, Doctor Name, Patient Name in one line */
+.table td:nth-child(2),
+.table th:nth-child(2),   /* Date */
+.table td:nth-child(3),
+.table th:nth-child(3),   /* Time */
+.table td:nth-child(5),
+.table th:nth-child(5),   /* Doctor */
+.table td:nth-child(6),
+.table th:nth-child(6) {  /* Patient */
+    white-space: nowrap;
+}
+
+/* Action buttons container – single line, evenly spaced */
+.table-actions {
+    display: inline-flex;
+    gap: 0.25rem;
+    white-space: nowrap;
+}
+
+/* Ensure action buttons align right in all tables */
+td.table-actions,
+.text-end .table-actions {
+    justify-content: flex-end !important;
+    width: 100%;
+}
+
+
+
+/* Card headings */
+.card-header-title {
+    margin-bottom: 0;
+    font-weight: 600;
+}
+
+/* Navbar brand */
+.navbar-brand span {
+    font-weight: 600;
+}
+
+/* Navbar link brightness */
+.navbar a.nav-link {
+    color: #ffffff !important;
+    font-weight: 500;
+}
+
+.navbar a.nav-link:hover {
+    color: #ffeb3b !important;
+}
+
+/* Navbar brand */
+.navbar-brand {
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+/* Chart container – small, centered charts */
+.chart-wrapper-sm {
+    position: relative;
+    max-width: 480px;
+    height: 260px;
+    margin: 0 auto;
+}
